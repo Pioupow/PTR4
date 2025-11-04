@@ -1,93 +1,66 @@
-#include "clavier.hpp"
+#include "Productrice.hpp"
+#include "consommatrice.hpp"
+#include "partage.hpp"
 #include "screen.hpp"
-#include "task_heure.hpp"
-#include "task_fullpower.hpp"
-#include "task_nom.hpp"
-#include "task_fichier.hpp"
-#include "task_nombre.hpp"
-#include "task_config.hpp"
-#include "com.hpp"
-#include <cstring>
+#include "clavier.hpp"
+#include <unistd.h>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
-    char car = 0;
-
-    // Initialisation tâche principale (main)
-    TThread::initTaskMain(SCHED_FIFO, 0);
-
     // Création clavier et console
-    TClavier *clavier = TClavier::getInstance();
     TScreen *screen  = new TScreen();
     screen->start();
+    TClavier *clavier = TClavier::getInstance();
+    TPartage *partage = TPartage::getInstance();
+
+    const int policy = SCHED_FIFO;
 
     // Nouvelles tâches demandées
-    TTaskHeure     *tHeure     = new TTaskHeure("Heure", screen, SCHED_RR, 78, 0);
-    TTaskFullPower *tFull      = new TTaskFullPower("FullP", screen, SCHED_RR, 10, 0); // priorité la plus faible
-    TTaskNom       *tNom       = new TTaskNom("Nom", screen, SCHED_RR, 77, 0, "Nathan");
-    TTaskFichier   *tFichier   = new TTaskFichier("Fichier", screen, SCHED_RR, 76, 0);
-    TTaskNombre    *tNombre    = new TTaskNombre("Nombre", screen, SCHED_RR, 75, 0);
-    TTaskConfig    *tConfig    = new TTaskConfig("Config", screen, SCHED_RR, 74, 0);
-
+    TProductrice *prod1 = new TProductrice("Productrice1", (void *)partage, true, policy, 90, 0);
+    TConsommatrice *cons1 = new TConsommatrice("Consommatrice1", (void *)partage, policy, 70, 0, 1);
+    TConsommatrice *cons2 = new TConsommatrice("Consommatrice2", (void *)partage, policy, 68, 0, 2);
+    TProductrice *prod2 = new TProductrice("Productrice2", (void *)partage, false, policy, 88, 0);
     // Démarrage tâches
-    tHeure->start();
-    tFull->start();
-    tNom->start();
-    tFichier->start();
-    tNombre->start();
-    tConfig->start();
+    prod1->start();
+    cons1->start();
+    cons2->start();
+    prod2->start();
 
     // Traitement tâche principale (affiche message et attend 'q'/'Q' pour quitter)
-    screen->dispStr(1,1,"Test RT (NL  09/25/2025)");
+    screen->dispStr(1,1,"LAB MUTEX - 2 prod et 2 cons");
+    screen->dispStr(1,3,"Appuyez sur 'q' ou 'Q' pour quitter");
 
-    static char buffer[41];
-    static int pos = 0;
-    int count = 0;
-    //memset(buffer, ' ', 40);
-    buffer[0] = '\0';
-    //buffer[40] = '\0';
-    do
+
+    bool running = true;
+    while (running)
     {
-        if(clavier->kbhit())
+        uint32_t ok = partage->getControleOk();
+        uint32_t bad = partage->getControleBad();
+
+        char buffer[64];
+        snprintf(buffer, sizeof(buffer), "Contrôles OK : %10u", ok);
+        screen->dispStr(1, 5, buffer);
+        snprintf(buffer, sizeof(buffer), "Contrôles KO : %10u", bad);
+        screen->dispStr(1, 6, buffer);
+
+        int car = clavier->kbhit() ? clavier->getch() : -1;
+        if(car != -1)
         {
-            car = clavier->getch();
-            // Afficher caractère sur une ligne max 40 (simple logique)
-            //static std::string line;
-            if((car=='q') || (car=='Q')) break;
-            if(car == '\n' || car == '\r') { /* ignore / ou afficher */ }
-            else
+            if (car == 'q' || car == 'Q')
             {
-                /*if(line.size() < 40) line.push_back((char)car);
-                else
-                {
-                    buffer[pos] = car;
-                    pos = (pos + 1) % 40;
-                    screen->dispStr(1, 14, buffer);
-                }*/
-               if(count < 40)
-               {
-                   buffer[count++] = car;
-                   buffer[count] = '\0';
-               }
-               else
-               {
-                  buffer[pos] = car;
-                  pos = (pos + 1) % 40;
-               }
-               screen->dispStr(1, 14, buffer);
+                running = false;
             }
         }
-        usleep(50000); // 50ms
+
+        usleep(100000); // 100ms
     }
-    while( (car != 'q') && (car != 'Q') );
 
     // Destruction des tâches
-    delete tConfig;
-    delete tNombre;
-    delete tFichier;
-    delete tNom;
-    delete tFull;
-    delete tHeure;
+    delete prod1;
+    delete cons1;
+    delete cons2;
+    delete prod2;
 
     // Destruction console
     delete screen;

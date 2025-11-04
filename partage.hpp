@@ -1,3 +1,6 @@
+#ifndef PARTAGE_HPP
+#define PARTAGE_HPP
+
 #include "singleton.hpp"
 #include "mutex.hpp"
 #include <cstdint>
@@ -43,3 +46,5 @@ public:
     void unProtectTab2(void);
 
 };
+
+#endif // PARTAGE_HPP

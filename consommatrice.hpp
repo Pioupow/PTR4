@@ -12,11 +12,14 @@ class TConsommatrice : public TThread
         int id;
         uint8_t tab[100];
 
-        bool verifChecksum(uint8_t *pTab);
+        
 
     public:
-        explicit TConsommatrice(int _id);
-        void run(void) override;
+        TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id);
+        ~TConsommatrice(void);
+
+        void task(void) override;
+        bool verifChecksum(uint8_t *pTab);
 };
 
 #endif // CONSOMMATRICE_HPP

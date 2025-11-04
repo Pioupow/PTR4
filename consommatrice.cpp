@@ -3,38 +3,43 @@
 #include <ctime>
 #include <chrono>
 
-TConsommatrice::TConsommatrice(int _id): id(_id)
+TConsommatrice::TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id)
+    : TThread(name, shared, policy, priority, cpu), id(_id)
 {
 }
 
-void TConsommatrice::run(void)
+TConsommatrice::~TConsommatrice(void)
 {
-    TPartage &partage = TPartage::getInstance();
+}
+
+void TConsommatrice::task(void)
+{
+    TPartage *partage = TPartage::getInstance();
     TTemps chrono;
 
     while(1)
     {
-        partage.protectTab1();
-        partage.getTab1(tab,TPartage::FULL);
+        partage->protectTab1();
+        partage->getTab1(tab,TPartage::FULL);
         usleep(50000); // 50 ms de traitement
-        partage.unProtectTab1();
+        partage->unProtectTab1();
 
         if(verifChecksum(tab))
-            partage.incControleOk();
+            partage->incControleOk();
         else
-            partage.incControleBad();
+            partage->incControleBad();
 
         usleep(25000);
 
-        partage.protectTab2();
-        partage.getTab2(tab,TPartage::FULL);
+        partage->protectTab2();
+        partage->getTab2(tab,TPartage::FULL);
         usleep(50000); // 50 ms de traitement
-        partage.unProtectTab2();
+        partage->unProtectTab2();
 
         if(verifChecksum(tab))
-            partage.incControleOk();
+            partage->incControleOk();
         else
-            partage.incControleBad();
+            partage->incControleBad();
     }
 }
 
