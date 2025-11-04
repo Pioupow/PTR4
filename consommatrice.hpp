@@ -5,10 +5,12 @@
 #include "thread.hpp"
 #include "partage.hpp"
 #include "temps.hpp"
+#include "screen.hpp"
 
 class TConsommatrice : public TThread
 {
     private:
+        TScreen *screen;
         int id;
         uint8_t tab[100];
 

@@ -11,11 +11,13 @@
 #include <iostream>
 #include "thread.hpp"
 #include "partage.hpp"
+#include "screen.hpp"
 
 class TProductrice : public TThread
 {
     private:
     TPartage *partage;
+    TScreen *screen;
     bool useProtection;
 
     uint8_t calculChecksum(uint8_t *tab);

@@ -6,6 +6,7 @@
 TConsommatrice::TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id)
     : TThread(name, shared, policy, priority, cpu), id(_id)
 {
+    screen = (TScreen *)shared;
 }
 
 TConsommatrice::~TConsommatrice(void)
@@ -14,6 +15,7 @@ TConsommatrice::~TConsommatrice(void)
 
 void TConsommatrice::task(void)
 {
+    signalStart();
     TPartage *partage = TPartage::getInstance();
     TTemps chrono;
 
@@ -40,6 +42,8 @@ void TConsommatrice::task(void)
             partage->incControleOk();
         else
             partage->incControleBad();
+        static int i = 0;
+        screen->dispStr(1, 10 + id, "Consommatrice " + std::to_string(id) + " a terminé un cycle de consommation." + std::to_string(i++));
     }
 }
 

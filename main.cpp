@@ -11,9 +11,10 @@ int main(int argc, char *argv[])
     // Création clavier et console
     TScreen *screen  = new TScreen();
     screen->start();
+    screen->dispStr(1,1,"Initialisation...");
     TClavier *clavier = TClavier::getInstance();
     TPartage *partage = TPartage::getInstance();
-
+    screen->dispStr(1,2,"LAB MUTEX - 2 prod et 2 cons");
     const int policy = SCHED_FIFO;
 
     // Nouvelles tâches demandées
@@ -21,15 +22,20 @@ int main(int argc, char *argv[])
     TConsommatrice *cons1 = new TConsommatrice("Consommatrice1", (void *)partage, policy, 70, 0, 1);
     TConsommatrice *cons2 = new TConsommatrice("Consommatrice2", (void *)partage, policy, 68, 0, 2);
     TProductrice *prod2 = new TProductrice("Productrice2", (void *)partage, false, policy, 88, 0);
+    screen->dispStr(1,3,"Appuyez sur 'q' ou 'Q' pour quitter");
     // Démarrage tâches
     prod1->start();
+    screen->dispStr(1,4,"prod1");
     cons1->start();
-    cons2->start();
-    prod2->start();
+    screen->dispStr(8,4,"cons1");
+    //prod2->start();
+    //screen->dispStr(1,5,"prod2");
+    //cons2->start();
+    //screen->dispStr(1,7,"cons2");
 
     // Traitement tâche principale (affiche message et attend 'q'/'Q' pour quitter)
-    screen->dispStr(1,1,"LAB MUTEX - 2 prod et 2 cons");
-    screen->dispStr(1,3,"Appuyez sur 'q' ou 'Q' pour quitter");
+
+    
 
 
     bool running = true;
