@@ -18,12 +18,12 @@ class TProductrice : public TThread
     private:
     TPartage *partage;
     TScreen *screen;
-    bool useProtection;
+    int useProtection;
 
     uint8_t calculChecksum(uint8_t *tab);
 
     public:
-    TProductrice(const char *name, void *shared, bool protect, int policy, int priority, int32_t cpu);
+    TProductrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int protect);
     virtual ~TProductrice();
 
     void task(void) override;

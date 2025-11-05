@@ -18,20 +18,21 @@ int main(int argc, char *argv[])
     const int policy = SCHED_FIFO;
 
     // Nouvelles tâches demandées
-    TProductrice *prod1 = new TProductrice("Productrice1", (void *)partage, true, policy, 90, 0);
-    TConsommatrice *cons1 = new TConsommatrice("Consommatrice1", (void *)partage, policy, 70, 0, 1);
-    TConsommatrice *cons2 = new TConsommatrice("Consommatrice2", (void *)partage, policy, 68, 0, 2);
-    TProductrice *prod2 = new TProductrice("Productrice2", (void *)partage, false, policy, 88, 0);
+    TProductrice *prod1 = new TProductrice("Productrice1", screen, policy, 90, 0, 1);
+    TConsommatrice *cons1 = new TConsommatrice("Consommatrice1", screen, policy, 89, 0, 1, 1);
+    TConsommatrice *cons2 = new TConsommatrice("Consommatrice2", screen, policy, 88, 0, 2, 1);
+    TProductrice *prod2 = new TProductrice("Productrice2", screen, policy, 87, 0, 1);
     screen->dispStr(1,3,"Appuyez sur 'q' ou 'Q' pour quitter");
     // Démarrage tâches
+    TThread::initTaskMain(SCHED_FIFO, 0);
     prod1->start();
+    prod2->start();
     screen->dispStr(1,4,"prod1");
     cons1->start();
     screen->dispStr(8,4,"cons1");
-    //prod2->start();
-    //screen->dispStr(1,5,"prod2");
-    //cons2->start();
-    //screen->dispStr(1,7,"cons2");
+    screen->dispStr(15,4,"prod2");
+    cons2->start();
+    screen->dispStr(23,4,"cons2");
 
     // Traitement tâche principale (affiche message et attend 'q'/'Q' pour quitter)
 

@@ -13,11 +13,9 @@ class TConsommatrice : public TThread
         TScreen *screen;
         int id;
         uint8_t tab[100];
-
-        
-
+        int useProtection;
     public:
-        TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id);
+        TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id, int protect);
         ~TConsommatrice(void);
 
         void task(void) override;

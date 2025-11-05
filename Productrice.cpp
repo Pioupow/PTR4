@@ -1,11 +1,10 @@
 #include "Productrice.hpp"
 #include "temps.hpp"
 #include "screen.hpp"
-TProductrice::TProductrice(const char *name, void *shared, bool protect, int policy, int priority, int32_t cpu)
+TProductrice::TProductrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int protect)
     : TThread(name,shared,policy, priority, cpu)
     {
         screen = (TScreen *)shared;
-        partage = (TPartage *)shared;
         useProtection = protect;
         srand(time(NULL));
     }
@@ -17,8 +16,8 @@ TProductrice::TProductrice(const char *name, void *shared, bool protect, int pol
     void TProductrice::task(void)
     {
         signalStart();
+        TPartage *partage = TPartage::getInstance();
         uint8_t tab[100];
-        screen->dispStr(1, 7, "La productrice " + std::string(thread.name) + " démarre la production.");
         while(1)
         {
             for (int i = 0; i<99; i++)
@@ -48,8 +47,6 @@ TProductrice::TProductrice(const char *name, void *shared, bool protect, int pol
 
             if (useProtection)
                 partage->unProtectTab2();
-            static int i = 0;
-            screen->dispStr(1, 8, "Production recommence dans 100 ms" + std::to_string(i++));
             usleep(100000); // 100 ms et hop on recommence
         }
     }

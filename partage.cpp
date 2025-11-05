@@ -11,7 +11,6 @@ TPartage::TPartage(void)
 
 void TPartage::getTab1(uint8_t *pTab, copy_t type)
 {
-    mutexTab1.take();
     switch (type)
     {
     case FULL:
@@ -24,19 +23,15 @@ void TPartage::getTab1(uint8_t *pTab, copy_t type)
         memcpy(pTab, tab1 + sizeof(tab1) / 2, sizeof(tab1) / 2);
         break;
     }
-    mutexTab1.release();
 }
 
 void TPartage::setTab1(uint8_t *p_Tab)
 {
-    mutexTab1.take();
     memcpy(tab1, p_Tab, sizeof(tab1));
-    mutexTab1.release();
 }
 
 void TPartage::getTab2(uint8_t *pTab, copy_t type)
 {
-    mutexTab2.take();
     switch (type)
     {
     case FULL:
@@ -49,14 +44,11 @@ void TPartage::getTab2(uint8_t *pTab, copy_t type)
         memcpy(pTab, tab2 + sizeof(tab2) / 2, sizeof(tab2) / 2);
         break;
     }
-    mutexTab2.release();
 } 
 
 void TPartage::setTab2(uint8_t *p_Tab)
 {
-    mutexTab2.take();
     memcpy(tab2, p_Tab, sizeof(tab2));
-    mutexTab2.release();
 }
 
 void TPartage::incControleOk(void)

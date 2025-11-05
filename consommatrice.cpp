@@ -3,8 +3,8 @@
 #include <ctime>
 #include <chrono>
 
-TConsommatrice::TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id)
-    : TThread(name, shared, policy, priority, cpu), id(_id)
+TConsommatrice::TConsommatrice(const char *name, void *shared, int policy, int priority, int32_t cpu, int _id, int protect)
+    : TThread(name, shared, policy, priority, cpu), id(_id), useProtection(protect)
 {
     screen = (TScreen *)shared;
 }
@@ -21,10 +21,13 @@ void TConsommatrice::task(void)
 
     while(1)
     {
-        partage->protectTab1();
-        partage->getTab1(tab,TPartage::FULL);
+        if(useProtection)
+            partage->protectTab1();
+        partage->getTab1(tab,TPartage::FIRST_HALF);
         usleep(50000); // 50 ms de traitement
-        partage->unProtectTab1();
+        partage->getTab1(tab + 50,TPartage::SECOND_HALF);
+        if(useProtection)
+            partage->unProtectTab1();
 
         if(verifChecksum(tab))
             partage->incControleOk();
@@ -33,27 +36,28 @@ void TConsommatrice::task(void)
 
         usleep(25000);
 
-        partage->protectTab2();
-        partage->getTab2(tab,TPartage::FULL);
+        if(useProtection)
+            partage->protectTab2();
+        partage->getTab2(tab,TPartage::FIRST_HALF);
         usleep(50000); // 50 ms de traitement
-        partage->unProtectTab2();
+        partage->getTab2(tab + 50,TPartage::SECOND_HALF);
+        if(useProtection)
+            partage->unProtectTab2();
 
         if(verifChecksum(tab))
             partage->incControleOk();
         else
             partage->incControleBad();
-        static int i = 0;
-        screen->dispStr(1, 10 + id, "Consommatrice " + std::to_string(id) + " a terminé un cycle de consommation." + std::to_string(i++));
     }
 }
 
 bool TConsommatrice::verifChecksum(uint8_t *pTab)
 {
-    uint8_t somme = 0;
+    uint16_t somme = 0;
     for (int i = 0; i < 99; i++)
     {
         somme += pTab[i];
     }
-    uint8_t checksum = static_cast<uint8_t>(~somme % 256);
+    uint8_t checksum = static_cast<uint8_t>(~somme + 1);
     return (checksum == pTab[99]);
 }
