@@ -49,65 +49,41 @@ void TMqtt::on_message(const struct mosquitto_message *message)
 	auto it = mqttTable.find(topic);
 	if(it != mqttTable.end())
 		it->second(this,payload);
-
-#if 0
-	if(topic.substr(0,7) == "module/")
-		{
-		if(topic.substr(7,8) == "1")
-			{
-			partage.setModule1( (payload == "on")? true : false );
-			}
-		else if(topic.substr(7,8) == "2")
-			{
-			partage.setModule2( (payload == "on")? true : false );
-			}
-		else if(topic.substr(7,8) == "3")
-			{
-			partage.setModule3( (payload == "on")? true : false );
-			}
-		else if(topic.substr(7,8) == "4")
-			{
-			partage.setModule4( (payload == "on")? true : false );
-			}
-		else if(topic.substr(7,8) == "5")
-			{
-			partage.setModule5( (payload == "on")? true : false );
-			}
-		else if(topic.substr(7,8) == "6")
-			{
-			partage.setModule6( (payload == "on")? true : false );
-			}
-		}
-#endif
 	}
 
 void TMqtt::on_subscribe(int mid,int qos_count,const int *granted_pos)
 	{
-	screen->dispStr(1,12,"on_subcribe");
+	screen->dispStr(1,12,"on_subscribe");
 	}
 
 void TMqtt::messageModule1(string val)
 	{
+		screen->dispStr(1,13,"MSG mod1");
 	}
 
 void TMqtt::messageModule2(string val)
 	{
+		screen->dispStr(1,14,"MSG mod2");
 	}
 
 void TMqtt::messageModule3(string val)
 	{
+		screen->dispStr(1,15,"MSG mod3");
 	}
 
 void TMqtt::messageModule4(string val)
 	{
+		screen->dispStr(1,16,"MSG mod4");
 	}
 
 void TMqtt::messageModule5(string val)
 	{
+		screen->dispStr(1,17,"MSG mod5");
 	}
 
 void TMqtt::messageModule6(string val)
 	{
+		screen->dispStr(1,18,"MSG mod6");
 	}
 
 string TMqtt::getMqttConfig(string nameFichierConfig)

@@ -1,76 +1,59 @@
-#include "Productrice.hpp"
-#include "consommatrice.hpp"
 #include "partage.hpp"
 #include "screen.hpp"
 #include "clavier.hpp"
+#include "tacheMqtt.hpp"
+#include "configuration.hpp"
 #include <unistd.h>
 #include <iostream>
+#include <cstdio>
 
 int main(int argc, char *argv[])
 {
     // Création clavier et console
     TScreen *screen  = new TScreen();
     screen->start();
-    screen->dispStr(1,1,"Initialisation...");
+    screen->dispStr(1, 1, "Lab5 - MQTT");
+    screen->dispStr(1,2,"Initialisation du système MQTT...");
     TClavier *clavier = TClavier::getInstance();
     TPartage *partage = TPartage::getInstance();
-    screen->dispStr(1,2,"LAB MUTEX - 2 prod et 2 cons");
-    const int policy = SCHED_FIFO;
-
-    // Nouvelles tâches demandées
-    TProductrice *prod1 = new TProductrice("Productrice1", screen, policy, 90, 0, 1);
-    TConsommatrice *cons1 = new TConsommatrice("Consommatrice1", screen, policy, 89, 0, 1, 1);
-    TConsommatrice *cons2 = new TConsommatrice("Consommatrice2", screen, policy, 88, 0, 2, 1);
-    TProductrice *prod2 = new TProductrice("Productrice2", screen, policy, 87, 0, 1);
-    screen->dispStr(1,3,"Appuyez sur 'q' ou 'Q' pour quitter");
-    // Démarrage tâches
-    TThread::initTaskMain(SCHED_FIFO, 0);
-    prod1->start();
-    prod2->start();
-    screen->dispStr(1,4,"prod1");
-    cons1->start();
-    screen->dispStr(8,4,"cons1");
-    screen->dispStr(15,4,"prod2");
-    cons2->start();
-    screen->dispStr(23,4,"cons2");
-
-    // Traitement tâche principale (affiche message et attend 'q'/'Q' pour quitter)
-
     
-
+    TacheMqtt *mqttTask = new TacheMqtt("TacheMqtt", screen, SCHED_FIFO, 80, 0);
+    TThread::initTaskMain(SCHED_FIFO, 0);
+    mqttTask->start();
+    screen->dispStr(1,3,"Appuyez sur 1..6 pour changer L'état, 'Q' pour quitter.");
 
     bool running = true;
-    while (running)
-    {
-        uint32_t ok = partage->getControleOk();
-        uint32_t bad = partage->getControleBad();
+    bool etats[6] = {false, false, false, false, false, false};
 
-        char buffer[64];
-        snprintf(buffer, sizeof(buffer), "Contrôles OK : %10u", ok);
-        screen->dispStr(1, 5, buffer);
-        snprintf(buffer, sizeof(buffer), "Contrôles KO : %10u", bad);
-        screen->dispStr(1, 6, buffer);
+    while(running)
+    {
+        partage->getTousEtats(etats);
+        for (int i = 0; i < 6; ++i)
+        {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "Module %d : %s", i + 1, etats[i] ? "ON " : "OFF");
+            screen->dispStr(1, 6 + i, buffer);
+        }
 
         int car = clavier->kbhit() ? clavier->getch() : -1;
-        if(car != -1)
+        if (car != -1)
         {
-            if (car == 'q' || car == 'Q')
+            if (car >= '1' && car <= '6')
+            {
+                int moduleIndex = car - '1';
+                bool nouvelEtat = !etats[moduleIndex];
+                partage->setEtatModule(moduleIndex, nouvelEtat);
+            }
+            else if (car == 'Q' || car == 'q')
             {
                 running = false;
             }
         }
+        usleep(100000); // 100 ms
 
-        usleep(100000); // 100ms
     }
-
-    // Destruction des tâches
-    delete prod1;
-    delete cons1;
-    delete cons2;
-    delete prod2;
-
-    // Destruction console
+    delete mqttTask;
     delete screen;
-
     return 0;
+    
 }
