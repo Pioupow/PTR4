@@ -2,14 +2,18 @@
 #define TTASK1_HPP
 
 #include "thread.hpp"
+#include "mqtt.hpp"
+#include "partage.hpp"
 #include "screen.hpp"
 
 class TTask1 : public TThread
     {
     private:
+		TMqtt *mqtt;
 		TScreen *screen;
+		TPartage *partage;
     public:
-	TTask1(const char *name,void *shared,int policy,int priority,int32_t cpu);
+	TTask1(const char *name,void *shared,int32_t policy,int32_t priority,int32_t cpu = -1);
 	~TTask1();
 
 	void task(void);
