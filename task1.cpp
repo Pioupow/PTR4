@@ -1,4 +1,4 @@
-#include "task1.hpp"
+/*#include "task1.hpp"
 #include "temps.hpp"
 
 TTask1::TTask1(const char *name,void *shared,int32_t policy,int32_t priority,int32_t cpu) :
@@ -59,4 +59,4 @@ void TTask1::task(void)
 
 		usleep(250000);   // 250 ms
 		}
-    }
+    }*/

@@ -1,104 +1,64 @@
 #include "partage.hpp"
+#include <iostream>
 #include <cstring>
 
 TPartage::TPartage(void)
-    : controleOk(0),
-      controleBad(0)
+    : etatModules{false, false, false, false, false, false},
+      changement(false)
 {
-    memset(tab1, 0, sizeof(tab1));
-    memset(tab2, 0, sizeof(tab2));
 }
 
-void TPartage::getTab1(uint8_t *pTab, copy_t type)
+bool TPartage::getEtatModule(uint8_t index)
 {
-    switch (type)
+    if (index >= etatModules.size())
+        return false;
+    mutexEtat.take();
+    bool etat = etatModules[index];
+    mutexEtat.release();
+    return etat;
+}
+void TPartage::setEtatModule(uint8_t index, bool etat)
+{
+    if (index >= etatModules.size())
+        return;
+    mutexEtat.take();
+    if (etatModules[index] != etat)
     {
-    case FULL:
-        memcpy(pTab, tab1, sizeof(tab1));
-        break;
-    case FIRST_HALF:
-        memcpy(pTab, tab1, sizeof(tab1) / 2);
-        break;
-    case SECOND_HALF:       
-        memcpy(pTab, tab1 + sizeof(tab1) / 2, sizeof(tab1) / 2);
-        break;
+        etatModules[index] = etat;
+        changement = true;
     }
+    mutexEtat.release();
 }
-
-void TPartage::setTab1(uint8_t *p_Tab)
+void TPartage::toggleEtatModule(uint8_t index)
 {
-    memcpy(tab1, p_Tab, sizeof(tab1));
+    if (index >= etatModules.size())
+        return;
+    mutexEtat.take();
+    etatModules[index] = !etatModules[index];
+    changement = true;
+    mutexEtat.release();
 }
-
-void TPartage::getTab2(uint8_t *pTab, copy_t type)
+void TPartage::getTousEtats(bool *dest)
 {
-    switch (type)
+    if(!dest)
+        return;
+    mutexEtat.take();
+    for(size_t i = 0; i < etatModules.size(); ++i)
     {
-    case FULL:
-        memcpy(pTab, tab2, sizeof(tab2));
-        break;
-    case FIRST_HALF:
-        memcpy(pTab, tab2, sizeof(tab2) / 2);
-        break;
-    case SECOND_HALF:
-        memcpy(pTab, tab2 + sizeof(tab2) / 2, sizeof(tab2) / 2);
-        break;
+        dest[i] = etatModules[i];
     }
-} 
-
-void TPartage::setTab2(uint8_t *p_Tab)
-{
-    memcpy(tab2, p_Tab, sizeof(tab2));
+    mutexEtat.release();
 }
-
-void TPartage::incControleOk(void)
+bool TPartage::getChangement(void)
 {
-    mutexCtrl.take();
-    controleOk++;
-    mutexCtrl.release();
-}
-
-void TPartage::incControleBad(void)
-{
-    mutexCtrl.take();
-    controleBad++;
-    mutexCtrl.release();
-}
-
-uint32_t TPartage::getControleOk(void)
-{
-    uint32_t val;
-    mutexCtrl.take();
-    val = controleOk;
-    mutexCtrl.release();
+    mutexEtat.take();
+    bool val = changement;
+    mutexEtat.release();
     return val;
 }
-
-uint32_t TPartage::getControleBad(void)
+void TPartage::resetChangement(void)
 {
-    uint32_t val;
-    mutexCtrl.take();
-    val = controleBad;
-    mutexCtrl.release();
-    return val;
-}
-
-void TPartage::protectTab1(void)
-{
-    mutexTab1.take();
-}
-
-void TPartage::unProtectTab1(void)
-{
-    mutexTab1.release();
-}
-
-void TPartage::protectTab2(void)
-{
-    mutexTab2.take();
-}
-
-void TPartage::unProtectTab2(void)
-{
-    mutexTab2.release();
+    mutexEtat.take();
+    changement = false;
+    mutexEtat.release();
 }

@@ -13,8 +13,12 @@ TConfiguration::TConfiguration(const std::string &nomFichierConfiguration)
     {
         // Si le fichier n'existe pas, on le crée vide
         std::ofstream createFile(nomFichierConfiguration);
-        createFile.close();
-        parametreConfiguration.clear();
+        if (createFile.is_open())
+        {
+            createFile << "localhost" << std::endl;
+            createFile.close();
+        }
+        parametreConfiguration = "localhost";
         return;
     }
 
@@ -23,20 +27,25 @@ TConfiguration::TConfiguration(const std::string &nomFichierConfiguration)
     if (file.is_open())
     {
         std::string line;
-        if (std::getline(file, line))
+        if (std::getline(file, line) && !line.empty())
         {
             parametreConfiguration = line; // On prend la première ligne
         }
         else
         {
-            parametreConfiguration.clear(); // Fichier vide
+            file.close();
+            std::ofstream rewriteFile(nomFichierConfiguration);
+            rewriteFile << "localhost" << std::endl;
+            rewriteFile.close();
+            parametreConfiguration = "localhost";
         }
         file.close();
     }
     else
     {
         // Si erreur ouverture, paramètre vide
-        parametreConfiguration.clear();
+        std::cerr << "Erreur ouverture fichier : " << nomFichierConfiguration << std::endl;
+        parametreConfiguration = "localhost";
     }
 }
 

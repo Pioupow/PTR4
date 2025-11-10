@@ -1,4 +1,4 @@
-#ifndef TTASK1_HPP
+/*#ifndef TTASK1_HPP
 #define TTASK1_HPP
 
 #include "thread.hpp"
@@ -19,4 +19,4 @@ class TTask1 : public TThread
 	void task(void);
     };
 
-#endif //TTASK1_HPP
+#endif //TTASK1_HPP*/
